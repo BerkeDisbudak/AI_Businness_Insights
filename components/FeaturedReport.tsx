@@ -4,7 +4,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { useRouter } from 'expo-router';
 import { ArrowRight } from 'lucide-react-native';
 import { RiskBadge } from './RiskBadge';
-import Animated, { FadeIn } from 'react-native-reanimated';
+// import Animated, { FadeIn } from 'react-native-reanimated'; // Comment out this line
 
 export function FeaturedReport() {
   const { colors } = useTheme();
@@ -19,7 +19,8 @@ export function FeaturedReport() {
   };
 
   return (
-    <Animated.View entering={FadeIn.duration(800).delay(200)}>
+    // <Animated.View entering={FadeIn.duration(800).delay(200)}> // Replace with <View>
+    <View>
       <Pressable
         style={({ pressed }) => [
           styles.container,
@@ -58,39 +59,39 @@ export function FeaturedReport() {
               <Text style={[styles.actionText, { color: colors.primary }]}>
                 Detayları Görüntüle
               </Text>
-              <ArrowRight size={18} color={colors.primary} /> {/* İkon boyutu artırıldı */}
+              <ArrowRight size={16} color={colors.primary} />
             </Pressable>
           </View>
         </View>
       </Pressable>
-    </Animated.View>
+    </View> // Replace with </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 14, // Yuvarlaklık artırıldı
+    borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
   },
   content: {
-    padding: 20, // Dolgu artırıldı
+    padding: 16,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16, // Boşluk artırıldı
+    marginBottom: 12,
   },
   title: {
     fontFamily: 'Inter-SemiBold',
-    fontSize: 20, // Başlık boyutu artırıldı
-    marginBottom: 10, // Boşluk artırıldı
+    fontSize: 18,
+    marginBottom: 8,
   },
   summary: {
     fontFamily: 'Inter-Regular',
-    fontSize: 15, // Metin boyutu artırıldı
-    lineHeight: 22, // Satır yüksekliği artırıldı
-    marginBottom: 18, // Boşluk artırıldı
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 16,
   },
   footer: {
     flexDirection: 'row',
@@ -98,13 +99,13 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10, // Dikey dolgu artırıldı
-    paddingHorizontal: 14, // Yatay dolgu artırıldı
-    borderRadius: 10, // Yuvarlaklık artırıldı
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
   },
   actionText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 15, // Metin boyutu artırıldı
-    marginRight: 6, // Boşluk artırıldı
+    fontSize: 14,
+    marginRight: 4,
   },
 });
