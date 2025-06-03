@@ -1,18 +1,22 @@
-import React, { useEffect, useState } from 'react'; // useRef kaldırıldı
+// app/(tabs)/index.tsx dosyasının tamamı
+
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl, TextInput, Modal, Dimensions } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { FileText, RefreshCw, Sun, Moon, MoreVertical, PlusCircle, TrendingUp } from 'lucide-react-native';
+import { FileText, RefreshCw, Sun, Moon, MoreVertical } from 'lucide-react-native';
 import { Report, createReport, getReports, supabase } from '@/lib/supabase';
-import Animated, { FadeInDown, FadeOut, Layout, useAnimatedStyle, withRepeat, withTiming, withSequence, FadeIn, SlideInRight, SlideOutRight } from 'react-native-reanimated';
-import { TrendCapsule } from '@/components/TrendCapsule';
+// Animated importunu geçici olarak devre dışı bırakalım
+// import Animated, { FadeInDown, FadeOut, Layout, useAnimatedStyle, withRepeat, withTiming, withSequence, FadeIn, SlideInRight, SlideOutRight } from 'react-native-reanimated';
+import { TrendCapsule } from '@/components/TrendCapsule'; 
 
+// Ekran boyutlarını alalım, modal konumlandırması için
 const { width, height } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const { colors, theme, toggleTheme, AnimatedView } = useTheme();
+  const { colors, theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,36 +29,34 @@ export default function HomeScreen() {
   const [user, setUser] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMenuVisible, setIsMenuVisible] = useState(false);
-  const [totalReportsCount, setTotalReportsCount] = useState(0);
 
-  // isMounted ref'i ve useEffect'i bu versiyonda kaldırılmıştır
+  // Animasyon stillerini ve ilgili hook'ları geçici olarak devre dışı bırakalım
+  // const refreshIconStyle = useAnimatedStyle(() => {
+  //   if (!isRefreshing) return {};
+  //   return {
+  //     transform: [
+  //       {
+  //         rotate: withRepeat(
+  //           withSequence(
+  //             withTiming('0deg', { duration: 0 }),
+  //             withTiming('360deg', { duration: 1000 })
+  //           ),
+  //           -1,
+  //           false
+  //         ),
+  //       },
+  //     ],
+  //   };
+  // });
 
-  const refreshIconStyle = useAnimatedStyle(() => {
-    if (!isRefreshing) return {};
-    return {
-      transform: [
-        {
-          rotate: withRepeat(
-            withSequence(
-              withTiming('0deg', { duration: 0 }),
-              withTiming('360deg', { duration: 1000 })
-            ),
-            -1,
-            false
-          ),
-        },
-      ],
-    };
-  });
-
-  const themeIconAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: withTiming(isMenuVisible ? 1.1 : 1, { duration: 200 }) },
-        { rotate: withTiming(isMenuVisible ? '360deg' : '0deg', { duration: 400 }) },
-      ],
-    };
-  }, [theme, isMenuVisible]);
+  // const themeIconAnimatedStyle = useAnimatedStyle(() => {
+  //   return {
+  //     transform: [
+  //       { scale: withTiming(isMenuVisible ? 1.1 : 1, { duration: 200 }) },
+  //       { rotate: withTiming(isMenuVisible ? '360deg' : '0deg', { duration: 400 }) },
+  //     ],
+  //   };
+  // }, [theme, isMenuVisible]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -68,56 +70,27 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    let channel: any = null;
+    fetchUserData();
+    fetchReports();
 
-    const setupListenersAndFetch = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.warn('HomeScreen: User not authenticated on init, redirecting to login.');
-        router.replace('/login');
-        setLoading(false);
-        return;
-      }
-      setUser(user);
-
-      await fetchReports(true);
-
-      channel = supabase
-        .channel('reports_channel_home_screen')
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'Reports',
-          filter: `user_id=eq.${user.id}`
-        }, (payload) => {
-          console.log('Realtime change in Reports (HomeScreen):', payload);
-          fetchReports();
-        })
-        .subscribe();
-      
-      const handleFocus = () => {
-        console.log('HomeScreen focused, fetching reports...');
+    // Supabase channel listener'ı burada da kaldırılabilir eğer Homepage'in kendi listener'ı yoksa
+    // ve TrendCapsule yeterliyse.
+    // Eğer Reports tablosu için gerçek zamanlı güncellemeler istiyorsanız bu bloğu tutabilirsiniz.
+    // Ancak test için sorun çıkaran her yeri kapatmak faydalı olabilir.
+    const channel = supabase
+      .channel('reports_channel')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'Reports'
+      }, () => {
         fetchReports();
-        fetchUserData();
-      };
+      })
+      .subscribe();
 
-      if (typeof window !== 'undefined') {
-        window.addEventListener('focus', handleFocus);
-      }
-
-      return () => {
-        if (channel) {
-          console.log('Unsubscribing reports_channel_home_screen');
-          channel.unsubscribe();
-        }
-        if (typeof window !== 'undefined') {
-          window.removeEventListener('focus', handleFocus);
-        }
-      };
+    return () => {
+      channel.unsubscribe();
     };
-
-    const cleanup = setupListenersAndFetch();
-    return cleanup;
   }, []);
 
   async function fetchUserData() {
@@ -127,51 +100,17 @@ export default function HomeScreen() {
         setUser(user);
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('Error fetching user:', error);
     }
   }
 
-  async function fetchReports(initialLoad = false) {
-    if (!initialLoad && (loading || refreshing)) {
-      return;
-    }
-
-    if (initialLoad) {
-      setLoading(true);
-    } else {
-      if (!loading && !refreshing) setLoading(true);
-    }
-    
-    setError(null);
-
+  async function fetchReports() {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.replace('/login');
-        return;
-      }
-
-      const { data: allData, count: totalCount, error: allError } = await supabase
-        .from('Reports')
-        .select('*', { count: 'exact' })
-        .eq('user_id', user.id);
-
-      if (allError) throw allError;
-      setTotalReportsCount(totalCount || 0);
-
-      const { data, error: limitedReportsError } = await supabase
-        .from('Reports')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (limitedReportsError) throw limitedReportsError;
+      const data = await getReports();
       setReports(data || []);
-
-    } catch (err: any) {
-      console.error('HomeScreen: Error fetching reports:', err);
-      setError('Raporlar yüklenirken bir hata oluştu: ' + (err.message || 'Bilinmeyen hata'));
+    } catch (err) {
+      setError('Raporlar yüklenirken bir hata oluştu.');
+      console.error('Error fetching reports:', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -188,7 +127,6 @@ export default function HomeScreen() {
   const handleManualRefresh = () => {
     setIsRefreshing(true);
     setIsMenuVisible(false);
-    setError(null);
     fetchReports();
   };
 
@@ -211,7 +149,7 @@ export default function HomeScreen() {
       setNewContent('');
       setShowNewReport(false);
       fetchReports();
-    } catch (err: any) {
+    } catch (err) {
       setError('Rapor oluşturulurken bir hata oluştu');
       console.error('Error creating report:', err);
     } finally {
@@ -220,7 +158,8 @@ export default function HomeScreen() {
   };
 
   const renderReport = ({ item }: { item: Report }) => (
-    <Animated.View entering={FadeInDown.duration(400)} layout={Layout.springify()}>
+    // Animated.View yerine normal View kullanalım
+    <View style={styles.cardWrapper}> 
       <Pressable
         style={({ pressed }) => [
           styles.card,
@@ -229,11 +168,6 @@ export default function HomeScreen() {
             transform: [{ scale: pressed ? 0.98 : 1 }],
             borderColor: `${colors.border}50`,
             borderWidth: 1,
-            shadowColor: colors.shadow,
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.1,
-            shadowRadius: 2,
-            elevation: 2,
           },
         ]}
         onPress={() => router.push(`/report/${item.id}`)}
@@ -245,7 +179,7 @@ export default function HomeScreen() {
           <View style={styles.contentContainer}>
             <Text 
               style={[styles.content, { color: colors.textSecondary }]}
-              numberOfLines={3}
+              numberOfLines={3} 
             >
               {item.report}
             </Text>
@@ -255,7 +189,7 @@ export default function HomeScreen() {
           </View>
         </View>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 
   if (loading) {
@@ -272,7 +206,8 @@ export default function HomeScreen() {
   }
 
   return (
-    <AnimatedView style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Ayarlar ve Yenileme Menüsü Modalı */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -280,11 +215,8 @@ export default function HomeScreen() {
         onRequestClose={() => setIsMenuVisible(false)}
       >
         <Pressable style={styles.modalOverlay} onPress={() => setIsMenuVisible(false)}>
-          <Animated.View 
-            entering={SlideInRight.duration(300)}
-            exiting={SlideOutRight.duration(300)}
-            style={[styles.menuContainer, { backgroundColor: colors.card }]}
-          >
+          {/* Animated.View yerine normal View kullanalım */}
+          <View style={[styles.menuContainer, { backgroundColor: colors.card }]}>
             <Pressable
               style={styles.menuItem}
               onPress={handleManualRefresh}
@@ -300,18 +232,20 @@ export default function HomeScreen() {
               <Text style={[styles.menuItemText, { color: colors.text }]}>
                 {theme === 'dark' ? "Açık Tema" : "Koyu Tema"}
               </Text>
-              <Animated.View style={themeIconAnimatedStyle}>
+              {/* Animated.View yerine normal View kullanalım */}
+              <View>
                 {theme === 'dark' ? (
                   <Sun size={20} color={colors.text} style={styles.menuItemIcon} />
                 ) : (
                   <Moon size={20} color={colors.text} style={styles.menuItemIcon} />
                 )}
-              </Animated.View>
+              </View>
             </Pressable>
-          </Animated.View>
+          </View>
         </Pressable>
       </Modal>
 
+      {/* Ana Sayfa Başlık ve Tuş Bölümü */}
       <View style={styles.header}>
         <View style={styles.headerTextContainer}>
           <Text style={[styles.greeting, { color: colors.textSecondary }]}>
@@ -320,14 +254,8 @@ export default function HomeScreen() {
           <Text style={[styles.userName, { color: colors.text }]}>
             {user?.user_metadata?.display_name || 'Kullanıcı'}
           </Text>
-          <View style={[styles.fullWidthTrendCapsuleWrapper, { backgroundColor: `${colors.primary}15` }]}>
-            <TrendingUp size={24} color={colors.primary} style={styles.largeTrendCapsuleIcon} />
-            <View style={styles.trendCapsuleContent}>
-              <Text style={[styles.largeTrendCapsuleLabel, { color: colors.primary }]}>
-                Lead Artış Metriği
-              </Text>
-              <TrendCapsule />
-            </View>
+          <View style={styles.trendCapsuleWrapper}>
+            <TrendCapsule />
           </View>
           <Text style={[styles.aiText, { color: colors.primary }]}>
             Yapay Zeka Raporlarınız Hazır
@@ -338,32 +266,27 @@ export default function HomeScreen() {
           style={[styles.settingsButton, { backgroundColor: colors.card }]}
           onPress={() => setIsMenuVisible(true)}
         >
-          {isRefreshing ? (
-            <Animated.View style={refreshIconStyle}>
+          {/* Animated.View yerine normal View kullanalım */}
+          <View>
+            {isRefreshing ? (
               <RefreshCw size={20} color={colors.primary} />
-            </Animated.View>
-          ) : (
-            <MoreVertical size={20} color={colors.text} />
-          )}
+            ) : (
+              <MoreVertical size={20} color={colors.text} />
+            )}
+          </View>
         </Pressable>
       </View>
 
+      {/* Hata Mesajı */}
       {error && (
-        <Animated.View entering={FadeIn.duration(300)} style={[styles.errorBox, { backgroundColor: `${colors.error}10`, borderColor: colors.error }]}>
-          <Text style={[styles.errorText, { color: colors.error }]}>
-            {error}
-          </Text>
-        </Animated.View>
+        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
       )}
 
+      {/* Yeni Rapor Oluşturma Formu (Gerektiğinde Görünür) */}
       {showNewReport && (
-        <Animated.View entering={FadeIn.duration(300)} style={[styles.newReportContainer, { backgroundColor: colors.card }]}>
+        <View style={[styles.newReportContainer, { backgroundColor: colors.card }]}>
           <TextInput
-            style={[styles.input, { 
-                color: colors.text, 
-                borderColor: error ? colors.error : colors.border,
-                height: 100 
-            }]}
+            style={[styles.input, { color: colors.text, borderColor: colors.border, height: 100 }]}
             placeholder="Rapor İçeriği"
             placeholderTextColor={colors.textTertiary}
             value={newContent}
@@ -382,9 +305,10 @@ export default function HomeScreen() {
               <Text style={styles.createButtonText}>Rapor Oluştur</Text>
             )}
           </Pressable>
-        </Animated.View>
+        </View>
       )}
 
+      {/* Rapor Listesi */}
       <FlatList
         data={reports}
         renderItem={renderReport}
@@ -405,42 +329,17 @@ export default function HomeScreen() {
         }
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <FileText size={64} color={colors.textTertiary} style={styles.emptyIcon} />
-            <Text style={[styles.emptyTitle, { color: colors.text, marginTop: 16 }]}>
+            <FileText size={48} color={colors.textTertiary} style={styles.emptyIcon} />
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>
               Henüz Rapor Yok
             </Text>
-            <Text style={[styles.emptyDescription, { color: colors.textSecondary, marginBottom: 24 }]}>
-              Yeni raporunuz geldiğinde ana sayfada görüntülenecektir.
+            <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
+              Yeni raporunuz geldiğinde ana sayfada görüntülenecektir
             </Text>
-            <Pressable
-              style={({ pressed }) => [
-                styles.createFirstReportButton,
-                { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }
-              ]}
-              onPress={() => setShowNewReport(true)}
-            >
-              <PlusCircle size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-              <Text style={styles.createFirstReportButtonText}>İlk Raporu Oluştur</Text>
-            </Pressable>
           </View>
         )}
-        ListFooterComponent={() => (
-          totalReportsCount > 5 && (
-            <Animated.View entering={FadeIn.delay(200)} style={styles.viewAllContainer}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.viewAllButton,
-                  { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }
-                ]}
-                onPress={() => router.push('/(tabs)/reports')}
-              >
-                <Text style={styles.viewAllButtonText}>Tüm Raporları Görüntüle ({totalReportsCount})</Text>
-              </Pressable>
-            </Animated.View>
-          )
-        )}
       />
-    </AnimatedView>
+    </View>
   );
 }
 
@@ -468,30 +367,11 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontFamily: 'Inter-Bold',
-    fontSize: 28,
+    fontSize: 24,
     marginBottom: 8,
   },
-  fullWidthTrendCapsuleWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 28,
-    alignSelf: 'stretch',
-    minHeight: 60,
+  trendCapsuleWrapper: {
     marginBottom: 8,
-  },
-  largeTrendCapsuleIcon: {
-    marginRight: 12,
-    flexShrink: 0,
-  },
-  trendCapsuleContent: {
-    flex: 1,
-  },
-  largeTrendCapsuleLabel: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 14,
-    marginBottom: 4,
   },
   aiText: {
     fontFamily: 'Inter-Medium',
@@ -508,11 +388,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   refreshIcon: {
     opacity: 0.8,
@@ -524,16 +399,19 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 120,
   },
   card: {
     borderRadius: 12,
     marginBottom: 16,
     padding: 16,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+  cardWrapper: { // Added for the temporary View replacement of Animated.View
+    marginBottom: 16, // Matches the margin-bottom of the original Animated.View
   },
   cardHeader: {
     flexDirection: 'row',
@@ -574,17 +452,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-Medium',
     textAlign: 'center',
-  },
-  errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginHorizontal: 16,
     marginBottom: 16,
-    justifyContent: 'center',
-    gap: 8,
+    paddingHorizontal: 20,
   },
   emptyContainer: {
     flex: 1,
@@ -621,38 +490,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   createButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     padding: 16,
     borderRadius: 8,
-    marginTop: 8,
-    gap: 8,
+    alignItems: 'center',
   },
   createButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
   },
-  createFirstReportButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    marginTop: 16,
-    gap: 8,
-  },
-  createFirstReportButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-  },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-end',
+    justifyContent: 'flex-start', 
+    alignItems: 'flex-end',   
     backgroundColor: 'rgba(0,0,0,0.4)',
     paddingTop: 100,
     paddingRight: 20,
@@ -685,19 +535,5 @@ const styles = StyleSheet.create({
     height: 1,
     marginVertical: 4,
     marginHorizontal: 16,
-  },
-  viewAllContainer: {
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
-  viewAllButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-  },
-  viewAllButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
   },
 });
