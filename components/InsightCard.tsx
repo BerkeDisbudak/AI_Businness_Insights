@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { RiskBadge } from './RiskBadge';
 import { Bookmark } from 'lucide-react-native';
-import Animated, { FadeInRight } from 'react-native-reanimated';
+// import Animated, { FadeInRight } from 'react-native-reanimated'; // Comment out this line
 
 interface Insight {
   id: string;
@@ -29,7 +29,8 @@ export function InsightCard({ insight, onPress }: InsightCardProps) {
   };
 
   return (
-    <Animated.View entering={FadeInRight.duration(400)}>
+    // <Animated.View entering={FadeInRight.duration(400)}> // Replace with <View>
+    <View>
       <Pressable
         style={({ pressed }) => [
           styles.container,
@@ -45,7 +46,7 @@ export function InsightCard({ insight, onPress }: InsightCardProps) {
           <RiskBadge riskLevel={insight.riskLevel} size="small" />
           <Pressable onPress={toggleFavorite} style={styles.bookmarkButton}>
             <Bookmark
-              size={22} // İkon boyutu artırıldı
+              size={20}
               color={isFavorite ? colors.primary : colors.textTertiary}
               fill={isFavorite ? colors.primary : 'transparent'}
             />
@@ -72,14 +73,14 @@ export function InsightCard({ insight, onPress }: InsightCardProps) {
           {insight.date}
         </Text>
       </Pressable>
-    </Animated.View>
+    </View> // Replace with </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20, // Dolgu artırıldı
-    borderRadius: 14, // Yuvarlaklık artırıldı
+    padding: 16,
+    borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
   },
@@ -87,24 +88,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14, // Boşluk artırıldı
+    marginBottom: 12,
   },
   title: {
     fontFamily: 'Inter-SemiBold',
-    fontSize: 19, // Başlık boyutu artırıldı
+    fontSize: 18,
     marginBottom: 8,
   },
   summary: {
     fontFamily: 'Inter-Regular',
-    fontSize: 15, // Özet metin boyutu artırıldı
-    lineHeight: 22, // Satır yüksekliği artırıldı
-    marginBottom: 14, // Boşluk artırıldı
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
   },
   date: {
     fontFamily: 'Inter-Regular',
-    fontSize: 13, // Tarih metin boyutu artırıldı
+    fontSize: 12,
   },
   bookmarkButton: {
-    padding: 6, // Dolgu artırıldı
+    padding: 4,
   },
 });
