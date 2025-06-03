@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { RiskBadge } from './RiskBadge';
 import { ChevronRight } from 'lucide-react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+// import Animated, { FadeInDown } from 'react-native-reanimated'; // Comment out this line
 
 interface Report {
   id: string;
@@ -27,7 +27,8 @@ export function ReportCard({ report, onPress }: ReportCardProps) {
   const { colors } = useTheme();
 
   return (
-    <Animated.View entering={FadeInDown.duration(400)}>
+    // <Animated.View entering={FadeInDown.duration(400)}> // Replace with <View>
+    <View>
       <Pressable
         style={({ pressed }) => [
           styles.container,
@@ -86,69 +87,69 @@ export function ReportCard({ report, onPress }: ReportCardProps) {
         </View>
 
         <View style={styles.chevronContainer}>
-          <ChevronRight color={colors.textTertiary} size={24} /> {/* İkon boyutu artırıldı */}
+          <ChevronRight color={colors.textTertiary} size={20} />
         </View>
       </Pressable>
-    </Animated.View>
+    </View> // Replace with </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    borderRadius: 14, // Yuvarlaklık artırıldı
+    borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
     overflow: 'hidden',
   },
   content: {
     flex: 1,
-    padding: 20, // Dolgu artırıldı
+    padding: 16,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14, // Boşluk artırıldı
+    marginBottom: 12,
   },
   title: {
     fontFamily: 'Inter-SemiBold',
-    fontSize: 18, // Başlık boyutu artırıldı
+    fontSize: 16,
     marginBottom: 8,
   },
   summary: {
     fontFamily: 'Inter-Regular',
-    fontSize: 15, // Özet metin boyutu artırıldı
-    lineHeight: 22, // Satır yüksekliği artırıldı
-    marginBottom: 14, // Boşluk artırıldı
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
   },
   date: {
     fontFamily: 'Inter-Regular',
-    fontSize: 13, // Tarih metin boyutu artırıldı
+    fontSize: 12,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
   tag: {
-    paddingHorizontal: 10, // Yatay dolgu artırıldı
-    paddingVertical: 5, // Dikey dolgu artırıldı
-    borderRadius: 14, // Yuvarlaklık artırıldı
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
     marginRight: 8,
     marginBottom: 4,
   },
   tagText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 13, // Etiket metin boyutu artırıldı
+    fontSize: 12,
   },
   moreTag: {
     fontFamily: 'Inter-Regular',
-    fontSize: 13, // Etiket metin boyutu artırıldı
-    marginLeft: 6, // Boşluk artırıldı
+    fontSize: 12,
+    marginLeft: 4,
     alignSelf: 'center',
   },
   chevronContainer: {
     justifyContent: 'center',
-    paddingRight: 18, // Sağ dolgu artırıldı
+    paddingRight: 16,
   },
 });
