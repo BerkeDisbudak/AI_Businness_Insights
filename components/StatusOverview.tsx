@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { ArrowDown, ArrowUp } from 'lucide-react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+// import Animated, { FadeIn } from 'react-native-reanimated'; // Comment out this line
 
 export function StatusOverview() {
   const { colors } = useTheme();
@@ -29,10 +29,8 @@ export function StatusOverview() {
   ];
 
   return (
-    <Animated.View 
-      entering={FadeIn.duration(800)}
-      style={styles.container}
-    >
+    // <Animated.View entering={FadeIn.duration(800)}> // Replace with <View>
+    <View style={styles.animatedViewWrapper}>
       <View style={[styles.metricsContainer, { backgroundColor: colors.card }]}>
         {metrics.map((metric, index) => (
           <React.Fragment key={index}>
@@ -53,9 +51,9 @@ export function StatusOverview() {
                   {metric.change !== 0 && (
                     <>
                       {metric.isPositive ? (
-                        <ArrowUp size={14} color={colors.success} /> {/* İkon boyutu artırıldı */}
+                        <ArrowUp size={12} color={colors.success} />
                       ) : (
-                        <ArrowDown size={14} color={colors.error} /> {/* İkon boyutu artırıldı */}
+                        <ArrowDown size={12} color={colors.error} />
                       )}
                       <Text 
                         style={[
@@ -75,19 +73,23 @@ export function StatusOverview() {
           </React.Fragment>
         ))}
       </View>
-    </Animated.View>
+    </View> // Replace with </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 18, // Yatay dolgu artırıldı
-    marginTop: 20, // Üst boşluk artırıldı
+    paddingHorizontal: 16,
+    marginTop: 16,
+  },
+  animatedViewWrapper: { // Added for the temporary View replacement of Animated.View
+    paddingHorizontal: 16,
+    marginTop: 16,
   },
   metricsContainer: {
     flexDirection: 'row',
-    borderRadius: 14, // Yuvarlaklık artırıldı
-    padding: 20, // Dolgu artırıldı
+    borderRadius: 12,
+    padding: 16,
   },
   metricItem: {
     flex: 1,
@@ -95,29 +97,29 @@ const styles = StyleSheet.create({
   },
   divider: {
     width: 1,
-    marginHorizontal: 10, // Yatay boşluk artırıldı
+    marginHorizontal: 8,
   },
   metricValue: {
     fontFamily: 'Inter-Bold',
-    fontSize: 22, // Metin boyutu artırıldı
-    marginBottom: 6, // Boşluk artırıldı
+    fontSize: 20,
+    marginBottom: 4,
   },
   metricDetails: {
     alignItems: 'center',
   },
   metricLabel: {
     fontFamily: 'Inter-Regular',
-    fontSize: 14, // Metin boyutu artırıldı
+    fontSize: 12,
     textAlign: 'center',
   },
   changeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6, // Üst boşluk artırıldı
+    marginTop: 4,
   },
   changeText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 14, // Metin boyutu artırıldı
-    marginLeft: 4, // Boşluk artırıldı
+    fontSize: 12,
+    marginLeft: 2,
   },
 });
