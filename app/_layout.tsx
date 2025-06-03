@@ -1,120 +1,98 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useFrameworkReady } from '@/hooks/useFrameworkReady';
-import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
-import { ThemeProvider } from '@/context/ThemeContext';
-import { SplashScreen } from 'expo-router';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { supabase } from '@/lib/supabase';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Appearance, Platform, View } from 'react-native'; // Add View import
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { colors } from '@/constants/colors';
+// import Animated, { // Comment out these lines
+//   useSharedValue,
+//   withTiming, 
+//   useAnimatedStyle, 
+//   interpolateColor 
+// } from 'react-native-reanimated';
 
-// Prevent splash screen from auto-hiding
-SplashScreen.preventAutoHideAsync();
+type Theme = 'light' | 'dark';
 
-export default function RootLayout() {
-  useFrameworkReady();
-  const [showSplash, setShowSplash] = useState(true);
-  const [session, setSession] = useState<any>(null);
-  const segments = useSegments();
-  const router = useRouter();
-  
-  const [fontsLoaded, fontError] = useFonts({
-    'Inter-Regular': Inter_400Regular,
-    'Inter-Medium': Inter_500Medium,
-    'Inter-SemiBold': Inter_600SemiBold,
-    'Inter-Bold': Inter_700Bold,
+interface ThemeContextType {
+  theme: Theme;
+  toggleTheme: () => void;
+  colors: typeof colors.light | typeof colors.dark;
+  AnimatedView: typeof View; // Change Animated.View to View
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    const colorScheme = Appearance.getColorScheme();
+    return colorScheme === 'dark' ? 'dark' : 'light';
   });
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
+  // const progress = useSharedValue(theme === 'dark' ? 1 : 0); // Comment out this line
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem('theme');
+        if (savedTheme) {
+          setTheme(savedTheme as Theme);
+          // progress.value = savedTheme === 'dark' ? 1 : 0; // Comment out this line
+        }
+      } catch (error) {
+        console.error('Error loading theme:', error);
+      }
+    };
+    loadTheme();
   }, []);
 
   useEffect(() => {
-    if (!fontsLoaded || fontError) return;
+    if (Platform.OS === 'web') {
+      document.body.style.backgroundColor = 
+        theme === 'dark' ? colors.dark.background : colors.light.background;
+    }
+  }, [theme]);
 
-    const inAuthGroup = segments[0] === '(auth)';
+  const toggleTheme = async () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    // progress.value = withTiming(newTheme === 'dark' ? 1 : 0, { duration: 300 }); // Comment out this line
+    try {
+      await AsyncStorage.setItem('theme', newTheme);
+    } catch (error) {
+      console.error('Error saving theme:', error);
+    }
+  };
 
-    // Show splash screen for 2 seconds
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-      SplashScreen.hideAsync();
-      
-      // After splash screen, handle navigation based on auth state
-      if (!session && !inAuthGroup) {
-        router.replace('/login');
-      } else if (session && inAuthGroup) {
-        router.replace('/(tabs)');
-      }
-    }, 2000);
+  // AnimatedView bileşenini normal View olarak değiştirelim
+  const AnimatedView = ({ style, ...props }: any) => {
+    // const animatedStyle = useAnimatedStyle(() => { // Comment out this line
+    //   const backgroundColor = interpolateColor(
+    //     progress.value,
+    //     [0, 1],
+    //     [colors.light.background, colors.dark.background]
+    //   );
 
-    return () => clearTimeout(timer);
-  }, [fontsLoaded, fontError, session, segments]);
+    //   return {
+    //     backgroundColor,
+    //     ...style,
+    //   };
+    // });
 
-  // Return null to keep splash screen visible while fonts load
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
+    // return <Animated.View style={animatedStyle} {...props} />; // Comment out this line
+    return <View style={[style, { backgroundColor: theme === 'dark' ? colors.dark.background : colors.light.background }]} {...props} />;
+  };
+
+  const currentColors = theme === 'light' ? colors.light : colors.dark;
 
   return (
-    <ThemeProvider>
-      {showSplash ? (
-        <Animated.View 
-          entering={FadeIn.duration(1000)}
-          exiting={FadeOut.duration(500)}
-          style={styles.splashContainer}
-        >
-          <Text style={styles.splashTitle}>πCRM</Text>
-          <Text style={styles.splashSubtitle}>by DijitalPi</Text>
-        </Animated.View>
-      ) : (
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: 'fade',
-            animationDuration: 200,
-          }}
-        >
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen 
-            name="report/[id]" 
-            options={{ 
-              presentation: 'card',
-              animation: 'slide_from_right',
-            }} 
-          />
-          <Stack.Screen name="+not-found" options={{ title: 'Not Found' }} />
-        </Stack>
-      )}
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <ThemeContext.Provider value={{ theme, toggleTheme, colors: currentColors, AnimatedView }}>
+      {children}
+    </ThemeContext.Provider>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  splashContainer: {
-    flex: 1,
-    backgroundColor: '#4361EE',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  splashTitle: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 48,
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  splashSubtitle: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 18,
-    color: '#FFFFFF',
-    opacity: 0.8,
-  },
-});
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+};
