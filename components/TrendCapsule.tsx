@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { supabase } from '@/lib/supabase';
+import { TrendingUp } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 // Trend verisinin yapısını tanımlar.
@@ -18,30 +19,27 @@ export function TrendCapsule() {
 
   /**
    * Supabase'den en son trend verisini çeker.
-   * Bu fonksiyon hem ilk yüklemede hem de gerçek zamanlı değişikliklerde çağrılır.
+   * Bu fonksiyon sadece ilk yüklemede çağrılır.
    */
   const fetchLatestTrend = async () => {
     setLoading(true); // Veri çekme başladığında yükleme durumunu ayarla
     setError(null);   // Önceki hataları temizle
 
     try {
-      // Supabase kimlik doğrulama servisinden oturum açmış kullanıcıyı alır.
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        // Eğer kullanıcı oturumu bulunamazsa, uyarı ver ve işlemi durdur.
         console.warn('Kullanıcı oturumu bulunamadı, trend verisi çekilemiyor.');
-        setError('Kullanıcı oturumu bulunamadı.'); // Kullanıcıya gösterilecek hata mesajı
+        setError('Kullanıcı oturumu bulunamadı.');
         return;
       }
 
-      // Supabase'den 'trend_analyses' tablosunu sorgular.
       const { data, error: fetchError } = await supabase
-        .from('trend_analyses') 
-        .select('trends, created_at') // 'trends' sütununu seçiyoruz.
-        .eq('user_id', user.id) 
+        .from('trend_analyses') // Tablo adı doğruluğunu tekrar kontrol edin
+        .select('trends') // Sadece 'trends' sütununu seçiyoruz
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .maybeSingle(); 
+        .maybeSingle();
 
       if (fetchError) {
         console.error('Supabase sorgu hatası:', fetchError);
@@ -64,32 +62,36 @@ export function TrendCapsule() {
     }
   };
 
+  // Bileşen yüklendiğinde veriyi çeker. Sadece bir kez çalışır.
   useEffect(() => {
     fetchLatestTrend();
+    // Supabase gerçek zamanlı dinleyici tamamen kaldırıldı.
+    // Eğer trend_analyses tablosu için gerçek zamanlı dinleyiciye ihtiyacınız yoksa,
+    // bu satırları kaldırmanız gerekir.
+    // const channel = supabase
+    //   .channel('trend_changes')
+    //   .on('postgres_changes', {
+    //     event: '*',
+    //     schema: 'public',
+    //     table: 'trend_analyses'
+    //   }, (payload) => {
+    //     console.log('Supabase gerçek zamanlı değişiklik algılandı:', payload);
+    //     fetchLatestTrend();
+    //   })
+    //   .subscribe();
 
-    const channel = supabase
-      .channel('trend_changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'trend_analyses'
-      }, (payload) => {
-        console.log('Supabase gerçek zamanlı değişiklik algılandı:', payload);
-        fetchLatestTrend();
-      })
-      .subscribe();
+    // return () => {
+    //   channel.unsubscribe();
+    //   console.log('Supabase kanal aboneliği kaldırıldı.');
+    // };
+  }, []); // Bağımlılık dizisi boş olduğu için bu useEffect sadece bir kez çalışır.
 
-    return () => {
-      channel.unsubscribe();
-      console.log('Supabase kanal aboneliği kaldırıldı.');
-    };
-  }, []);
-
+  // Yükleme durumu arayüzü
   if (loading) {
     return (
       <Animated.View 
         entering={FadeIn.duration(400)}
-        style={styles.container}
+        style={[styles.container, { backgroundColor: `${colors.primary}15` }]}
       >
         <ActivityIndicator size="small" color={colors.primary} />
         <Text style={[styles.text, { color: colors.primary, marginLeft: 8 }]}>Yükleniyor...</Text>
@@ -97,39 +99,45 @@ export function TrendCapsule() {
     );
   }
 
+  // Hata durumu arayüzü
   if (error) {
     return (
       <Animated.View 
         entering={FadeIn.duration(400)}
-        style={styles.container}
+        style={[styles.container, { backgroundColor: `${colors.error}15` }]}
       >
+        <TrendingUp size={16} color={colors.error} style={styles.icon} />
         <Text style={[styles.text, { color: colors.error }]}>{error}</Text>
       </Animated.View>
     );
   }
 
+  // Veri yok durumu arayüzü (trendData null ise veya trends alanı boşsa)
   if (!trendData || !trendData.trends) {
     return (
       <Animated.View 
         entering={FadeIn.duration(400)}
-        style={styles.container}
+        style={[styles.container, { backgroundColor: `${colors.primary}15` }]}
       >
+        <TrendingUp size={16} color={colors.primary} style={styles.icon} />
         <Text style={[styles.text, { color: colors.primary }]}>
-          Veri yok
+          Henüz trend analizi yok
         </Text>
       </Animated.View>
     );
   }
 
+  // Veri başarıyla çekildiğinde trendi gösteren arayüz
   return (
     <Animated.View 
       entering={FadeIn.duration(400)}
-      style={styles.container}
+      style={[styles.container, { backgroundColor: `${colors.primary}15` }]}
     >
+      <TrendingUp size={16} color={colors.primary} style={styles.icon} />
       <View style={styles.contentContainer}>
         <Text 
           style={[styles.text, { color: colors.primary }]}
-          numberOfLines={1}
+          numberOfLines={1} // Tek satırda göster, taşarsa kes
         >
           {trendData.trends}
         </Text>
@@ -138,22 +146,26 @@ export function TrendCapsule() {
   );
 }
 
+// React Native stil tanımlamaları
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    // Bu dolgular ve yuvarlaklık artık parent bileşende yönetilecek
-    // paddingVertical: 10,
-    // paddingHorizontal: 14,
-    // borderRadius: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
     alignSelf: 'flex-start',
     maxWidth: '100%',
+  },
+  icon: {
+    marginRight: 8,
+    flexShrink: 0,
   },
   contentContainer: {
     flex: 1,
   },
   text: {
     fontFamily: 'Inter-Medium',
-    fontSize: 15,
+    fontSize: 14,
   },
 });
