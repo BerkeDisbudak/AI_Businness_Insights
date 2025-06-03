@@ -5,7 +5,7 @@ import { Bell, User, CircleHelp as HelpCircle, LogOut, Check } from 'lucide-reac
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Animated, { FadeIn } from 'react-native-reanimated';
+// import Animated, { FadeIn } from 'react-native-reanimated'; // Comment out this line
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
@@ -33,7 +33,6 @@ export default function SettingsScreen() {
       console.error('Error fetching user:', error);
     }
   };
-
 
   const handleUpdateDisplayName = async () => {
     if (!displayName.trim()) {
@@ -87,7 +86,7 @@ export default function SettingsScreen() {
       title: 'Hesap',
       items: [
         {
-          icon: <User size={24} color={colors.text} />, // İkon boyutu artırıldı
+          icon: <User size={22} color={colors.text} />,
           label: 'İsim',
           action: 'edit',
           value: displayName,
@@ -99,7 +98,7 @@ export default function SettingsScreen() {
       title: 'Tercihler',
       items: [
         {
-          icon: <Bell size={24} color={colors.text} />, // İkon boyutu artırıldı
+          icon: <Bell size={22} color={colors.text} />,
           label: 'Bildirimler',
           action: 'toggle',
           value: notificationsEnabled,
@@ -111,7 +110,7 @@ export default function SettingsScreen() {
       title: 'Destek',
       items: [
         {
-          icon: <HelpCircle size={24} color={colors.text} />, // İkon boyutu artırıldı
+          icon: <HelpCircle size={22} color={colors.text} />,
           label: 'Yardım ve Destek',
           action: 'link',
         },
@@ -260,7 +259,7 @@ export default function SettingsScreen() {
           style={[styles.logoutButton, { borderColor: colors.error }]}
           onPress={handleLogout}
         >
-          <LogOut size={22} color={colors.error} /> {/* İkon boyutu artırıldı */}
+          <LogOut size={20} color={colors.error} />
           <Text style={[styles.logoutText, { color: colors.error }]}>
             Çıkış Yap
           </Text>
@@ -272,13 +271,12 @@ export default function SettingsScreen() {
       </ScrollView>
 
       {showSuccess && (
-        <Animated.View 
-          entering={FadeIn.duration(400)}
-          style={[styles.toast, { backgroundColor: colors.success }]}
-        >
-          <Check size={22} color="#FFFFFF" /> {/* İkon boyutu artırıldı */}
+        // <Animated.View // Replace with <View>
+        //   entering={FadeIn.duration(400)}
+        <View style={[styles.toast, { backgroundColor: colors.success }]}>
+          <Check size={20} color="#FFFFFF" />
           <Text style={styles.toastText}>İsminiz başarıyla güncellendi</Text>
-        </Animated.View>
+        </View> // Replace with </View>
       )}
     </View>
   );
@@ -295,7 +293,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Inter-Bold',
-    fontSize: 36, // Başlık boyutu artırıldı
+    fontSize: 32,
     marginBottom: 8,
   },
   scrollView: {
@@ -306,51 +304,51 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     alignItems: 'center',
-    paddingVertical: 28, // Dikey dolgu artırıldı
+    paddingVertical: 24,
   },
   avatar: {
-    width: 88, // Avatar boyutu artırıldı
-    height: 88, // Avatar boyutu artırıldı
-    borderRadius: 44, // Yuvarlaklık artırıldı
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 18, // Boşluk artırıldı
+    marginBottom: 16,
   },
   avatarText: {
     fontFamily: 'Inter-Bold',
-    fontSize: 32, // Metin boyutu artırıldı
+    fontSize: 28,
     color: '#FFFFFF',
   },
   userName: {
     fontFamily: 'Inter-SemiBold',
-    fontSize: 22, // Metin boyutu artırıldı
-    marginBottom: 6, // Boşluk artırıldı
+    fontSize: 20,
+    marginBottom: 4,
   },
   userEmail: {
     fontFamily: 'Inter-Regular',
-    fontSize: 15, // Metin boyutu artırıldı
+    fontSize: 14,
   },
   section: {
-    marginBottom: 28, // Boşluk artırıldı
-    paddingHorizontal: 18, // Yatay dolgu artırıldı
+    marginBottom: 24,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
     fontFamily: 'Inter-Medium',
-    fontSize: 15, // Metin boyutu artırıldı
-    marginBottom: 10, // Boşluk artırıldı
+    fontSize: 14,
+    marginBottom: 8,
     textTransform: 'uppercase',
-    letterSpacing: 0.6, // Harf aralığı artırıldı
+    letterSpacing: 0.5,
   },
   sectionCard: {
-    borderRadius: 14, // Kart yuvarlaklığı artırıldı
+    borderRadius: 12,
     overflow: 'hidden',
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 18, // Dikey dolgu artırıldı
-    paddingHorizontal: 18, // Yatay dolgu artırıldı
+    paddingVertical: 16,
+    paddingHorizontal: 16,
   },
   settingLeft: {
     flexDirection: 'row',
@@ -358,8 +356,8 @@ const styles = StyleSheet.create({
   },
   settingLabel: {
     fontFamily: 'Inter-Medium',
-    fontSize: 17, // Metin boyutu artırıldı
-    marginLeft: 14, // Boşluk artırıldı
+    fontSize: 16,
+    marginLeft: 12,
   },
   settingRight: {
     flexDirection: 'row',
@@ -367,92 +365,92 @@ const styles = StyleSheet.create({
   },
   editButton: {
     fontFamily: 'Inter-Medium',
-    fontSize: 15, // Metin boyutu artırıldı
+    fontSize: 14,
   },
   linkValue: {
     fontFamily: 'Inter-Medium',
-    fontSize: 15, // Metin boyutu artırıldı
+    fontSize: 14,
   },
   editSection: {
-    margin: 18, // Dış boşluk artırıldı
-    padding: 20, // İç dolgu artırıldı
-    borderRadius: 14, // Yuvarlaklık artırıldı
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
   },
   input: {
     fontFamily: 'Inter-Regular',
-    fontSize: 17, // Metin boyutu artırıldı
-    paddingVertical: 14, // Dikey dolgu artırıldı
-    paddingHorizontal: 18, // Yatay dolgu artırıldı
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderWidth: 1,
-    borderRadius: 10, // Yuvarlaklık artırıldı
-    marginBottom: 18, // Boşluk artırıldı
+    borderRadius: 8,
+    marginBottom: 16,
   },
   errorText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 15, // Metin boyutu artırıldı
-    marginBottom: 18, // Boşluk artırıldı
+    fontSize: 14,
+    marginBottom: 16,
   },
   editButtons: {
     flexDirection: 'row',
-    gap: 14, // Boşluk artırıldı
+    gap: 12,
   },
   cancelButton: {
     flex: 1,
-    paddingVertical: 14, // Dikey dolgu artırıldı
-    borderRadius: 10, // Yuvarlaklık artırıldı
+    paddingVertical: 12,
+    borderRadius: 8,
     borderWidth: 1,
     alignItems: 'center',
   },
   cancelButtonText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 15, // Metin boyutu artırıldı
+    fontSize: 14,
   },
   saveButton: {
     flex: 1,
-    paddingVertical: 14, // Dikey dolgu artırıldı
-    borderRadius: 10, // Yuvarlaklık artırıldı
+    paddingVertical: 12,
+    borderRadius: 8,
     alignItems: 'center',
   },
   saveButtonText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 15, // Metin boyutu artırıldı
+    fontSize: 14,
     color: '#FFFFFF',
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 18, // Yatay boşluk artırıldı
-    marginTop: 12, // Dikey boşluk artırıldı
-    marginBottom: 28, // Dikey boşluk artırıldı
-    paddingVertical: 14, // Dikey dolgu artırıldı
-    borderRadius: 10, // Yuvarlaklık artırıldı
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
     borderWidth: 1,
   },
   logoutText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 17, // Metin boyutu artırıldı
-    marginLeft: 10, // Boşluk artırıldı
+    fontSize: 16,
+    marginLeft: 8,
   },
   version: {
     textAlign: 'center',
     fontFamily: 'Inter-Regular',
-    fontSize: 13, // Metin boyutu artırıldı
+    fontSize: 12,
   },
   toast: {
     position: 'absolute',
     bottom: 90,
-    left: 18, // Yatay boşluk artırıldı
-    right: 18, // Yatay boşluk artırıldı
+    left: 16,
+    right: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 18, // Dolgu artırıldı
-    borderRadius: 10, // Yuvarlaklık artırıldı
-    gap: 10, // Boşluk artırıldı
+    padding: 16,
+    borderRadius: 8,
+    gap: 8,
   },
   toastText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 15, // Metin boyutu artırıldı
+    fontSize: 14,
     color: '#FFFFFF',
   },
 });
