@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, Pressable, ActivityIndicator } from 
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/context/ThemeContext';
 import { supabase } from '@/lib/supabase';
-import Animated, { FadeIn } from 'react-native-reanimated';
+// import Animated, { FadeIn } from 'react-native-reanimated'; // Comment out this line
 import { Mail, Lock, ArrowRight } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -68,10 +68,8 @@ export default function LoginScreen() {
   };
 
   return (
-    <Animated.View 
-      entering={FadeIn.duration(600)}
-      style={[styles.container, { backgroundColor: colors.background }]}
-    >
+    // <Animated.View entering={FadeIn.duration(600)} // Replace with <View>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: colors.text }]}>
           Hoş Geldiniz
@@ -84,7 +82,7 @@ export default function LoginScreen() {
       <View style={styles.form}>
         <View style={styles.inputContainer}>
           <View style={[styles.inputWrapper, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Mail size={22} color={colors.textTertiary} /> {/* İkon boyutu artırıldı */}
+            <Mail size={20} color={colors.textTertiary} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="E-posta"
@@ -99,7 +97,7 @@ export default function LoginScreen() {
 
         <View style={styles.inputContainer}>
           <View style={[styles.inputWrapper, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Lock size={22} color={colors.textTertiary} /> {/* İkon boyutu artırıldı */}
+            <Lock size={20} color={colors.textTertiary} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Şifre"
@@ -152,7 +150,7 @@ export default function LoginScreen() {
           ) : (
             <>
               <Text style={styles.buttonText}>Giriş Yap</Text>
-              <ArrowRight size={22} color="#FFFFFF" /> {/* İkon boyutu artırıldı */}
+              <ArrowRight size={20} color="#FFFFFF" />
             </>
           )}
         </Pressable>
@@ -169,30 +167,30 @@ export default function LoginScreen() {
           </Text>
         </Pressable>
       </View>
-    </Animated.View>
+    </View> // Replace with </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24, // Padding artırıldı
+    padding: 20,
     justifyContent: 'center',
   },
   header: {
-    marginBottom: 48, // Boşluk artırıldı
+    marginBottom: 40,
   },
   title: {
-    fontSize: 34, // Başlık boyutu artırıldı
+    fontSize: 32,
     fontFamily: 'Inter-Bold',
-    marginBottom: 10, // Boşluk artırıldı
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 18, // Alt başlık boyutu artırıldı
+    fontSize: 16,
     fontFamily: 'Inter-Regular',
   },
   form: {
-    gap: 18, // Form elemanları arası boşluk artırıldı
+    gap: 16,
   },
   inputContainer: {
     gap: 8,
@@ -200,67 +198,67 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 18, // Giriş alanı dolgusu artırıldı
-    borderRadius: 14, // Kenar yuvarlaklığı artırıldı
+    padding: 16,
+    borderRadius: 12,
     borderWidth: 1,
   },
   input: {
     flex: 1,
-    marginLeft: 14, // Metin ile ikon arası boşluk artırıldı
-    fontSize: 17, // Giriş metin boyutu artırıldı
+    marginLeft: 12,
+    fontSize: 16,
     fontFamily: 'Inter-Regular',
   },
   rememberContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10, // Boşluk artırıldı
+    marginTop: 8,
   },
   checkbox: {
-    width: 22, // Checkbox boyutu artırıldı
-    height: 22, // Checkbox boyutu artırıldı
-    borderRadius: 5, // Checkbox yuvarlaklığı artırıldı
+    width: 20,
+    height: 20,
+    borderRadius: 4,
     borderWidth: 2,
-    marginRight: 10, // Boşluk artırıldı
+    marginRight: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkmark: {
     color: '#FFFFFF',
-    fontSize: 16, // Checkmark boyutu artırıldı
+    fontSize: 14,
   },
   rememberText: {
-    fontSize: 15, // Metin boyutu artırıldı
+    fontSize: 14,
     fontFamily: 'Inter-Regular',
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 18, // Düğme dolgusu artırıldı
-    borderRadius: 14, // Düğme yuvarlaklığı artırıldı
-    marginTop: 12, // Boşluk artırıldı
-    gap: 10, // İkon ile metin arası boşluk artırıldı
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    gap: 8,
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 18, // Düğme metin boyutu artırıldı
+    fontSize: 16,
     fontFamily: 'Inter-SemiBold',
   },
   linkContainer: {
     alignItems: 'center',
-    marginTop: 28, // Boşluk artırıldı
+    marginTop: 24,
   },
   linkText: {
-    fontSize: 15, // Metin boyutu artırıldı
+    fontSize: 14,
     fontFamily: 'Inter-Regular',
   },
   link: {
     fontFamily: 'Inter-SemiBold',
   },
   errorText: {
-    fontSize: 15, // Hata metin boyutu artırıldı
+    fontSize: 14,
     fontFamily: 'Inter-Medium',
     textAlign: 'center',
-    marginTop: 10, // Boşluk artırıldı
+    marginTop: 8,
   },
 });
