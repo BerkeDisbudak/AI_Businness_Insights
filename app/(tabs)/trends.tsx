@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { TrendingUp, TrendingDown, Pi } from 'lucide-react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+// import Animated, { FadeInDown } from 'react-native-reanimated'; // Comment out this line
 
 export default function TrendsScreen() {
   const { colors } = useTheme();
@@ -55,18 +55,20 @@ export default function TrendsScreen() {
             Son 30 günün analizi
           </Text>
         </View>
-        <Pi size={36} color={colors.primary} />
+        <Pi size={32} color={colors.primary} />
       </View>
 
-      <ScrollView
+      <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         {trends.map((trend, index) => (
-          <Animated.View
+          // <Animated.View // Replace with <View>
+          //   key={trend.title}
+          //   entering={FadeInDown.delay(index * 100)}
+          <View
             key={trend.title}
-            entering={FadeInDown.delay(index * 100)}
             style={[styles.card, { backgroundColor: colors.card }]}
           >
             <View style={styles.cardContent}>
@@ -78,9 +80,9 @@ export default function TrendsScreen() {
               </Text>
               <View style={styles.changeContainer}>
                 {trend.isPositive ? (
-                  <TrendingUp size={18} color={colors.success} /> 
+                  <TrendingUp size={16} color={colors.success} />
                 ) : (
-                  <TrendingDown size={18} color={colors.error} /> 
+                  <TrendingDown size={16} color={colors.error} />
                 )}
                 <Text
                   style={[
@@ -92,7 +94,7 @@ export default function TrendsScreen() {
                 </Text>
               </View>
             </View>
-          </Animated.View>
+          </View> // Replace with </View>
         ))}
       </ScrollView>
     </View>
@@ -113,12 +115,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Inter-Bold',
-    fontSize: 36,
+    fontSize: 32,
     marginBottom: 8,
   },
   subtitle: {
     fontFamily: 'Inter-Regular',
-    fontSize: 18,
+    fontSize: 16,
   },
   scrollView: {
     flex: 1,
@@ -130,11 +132,11 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     marginBottom: 16,
-    padding: 24,
-    elevation: 3,
+    padding: 20,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
   },
   cardContent: {
@@ -142,13 +144,13 @@ const styles = StyleSheet.create({
   },
   trendTitle: {
     fontFamily: 'Inter-Medium',
-    fontSize: 18,
-    marginBottom: 10,
+    fontSize: 16,
+    marginBottom: 8,
   },
   trendValue: {
     fontFamily: 'Inter-Bold',
-    fontSize: 28,
-    marginBottom: 10,
+    fontSize: 24,
+    marginBottom: 8,
   },
   changeContainer: {
     flexDirection: 'row',
@@ -156,7 +158,7 @@ const styles = StyleSheet.create({
   },
   changeText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 15,
-    marginLeft: 6,
+    fontSize: 14,
+    marginLeft: 4,
   },
 });
