@@ -1,118 +1,73 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl, Modal, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, Pressable, RefreshControl } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { useRouter } from 'expo-router';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { FileText, RefreshCw, Sun, Moon, MoreVertical } from 'lucide-react-native';
+import { FileText, RefreshCw, Moon, Sun } from 'lucide-react-native';
 import { supabase, Report } from '@/lib/supabase';
-import Animated, { FadeInDown, useAnimatedStyle, withRepeat, withTiming, withSequence, FadeIn, SlideInRight, SlideOutRight } from 'react-native-reanimated';
-
-const { width, height } = Dimensions.get('window');
+// import Animated, { FadeInDown, useAnimatedStyle, withRepeat, withTiming, withSequence } from 'react-native-reanimated'; // Comment out this line
 
 export default function ReportsScreen() {
-  const { colors, theme, toggleTheme, AnimatedView } = useTheme();
+  const { colors, theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [reports, setReports] = useState<Report[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = true;
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isMenuVisible, setIsMenuVisible] = useState(false); // State for menu visibility
 
   // Animation style for refresh icon
-  const refreshIconStyle = useAnimatedStyle(() => {
-    if (!isRefreshing) return {};
-    return {
-      transform: [
-        {
-          rotate: withRepeat(
-            withSequence(
-              withTiming('0deg', { duration: 0 }),
-              withTiming('360deg', { duration: 1000 })
-            ),
-            -1,
-            false
-          ),
-        },
-      ],
-    };
-  });
-
-  const themeIconAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        { scale: withTiming(isMenuVisible ? 1.1 : 1, { duration: 200 }) },
-        { rotate: withTiming(isMenuVisible ? '360deg' : '0deg', { duration: 400 }) },
-      ],
-    };
-  }, [theme, isMenuVisible]);
+  // const refreshIconStyle = useAnimatedStyle(() => {
+  //   if (!isRefreshing) return {};
+  //   return {
+  //     transform: [
+  //       {
+  //         rotate: withRepeat(
+  //           withSequence(
+  //             withTiming('0deg', { duration: 0 }),
+  //             withTiming('360deg', { duration: 1000 })
+  //           ),
+  //           -1,
+  //           false
+  //         ),
+  //       },
+  //     ],
+  //   };
+  // });
 
   useEffect(() => {
-    let channel: any = null;
+    fetchReports();
 
-    const setupListenersAndFetch = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.warn('ReportsScreen: User not authenticated on init, redirecting to login.');
-        router.replace('/login');
-        setLoading(false);
-        return;
-      }
-
-      await fetchReports(true);
-
-      channel = supabase
-        .channel('reports_channel_reports_screen') // Unique channel name
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'Reports',
-          filter: `user_id=eq.${user.id}` // Filter for current user's reports
-        }, (payload) => {
-          console.log('Realtime change in Reports (ReportsScreen):', payload);
-          fetchReports(); // Re-fetch data on change
-        })
-        .subscribe();
-      
-      // Ekran odaklandığında raporları yeniden çeker
-      const handleFocus = () => {
-        console.log('ReportsScreen focused, fetching reports...');
+    const channel = supabase
+      .channel('reports_channel')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'Reports'
+      }, () => {
         fetchReports();
-      };
+      })
+      .subscribe();
 
-      if (typeof window !== 'undefined') {
-        window.addEventListener('focus', handleFocus);
-      }
-
-      return () => {
-        if (channel) {
-          console.log('Unsubscribing reports_channel_reports_screen');
-          channel.unsubscribe();
-        }
-        if (typeof window !== 'undefined') {
-          window.removeEventListener('focus', handleFocus);
-        }
-      };
+    return () => {
+      channel.unsubscribe();
     };
-
-    const cleanup = setupListenersAndFetch();
-    return cleanup;
   }, []);
 
-  async function fetchReports(initialLoad = false) {
-    if (!initialLoad && (loading || refreshing)) {
-      return;
-    }
+  // Auto-refresh when screen comes into focus
+  useEffect(() => {
+    const focusHandler = () => {
+      fetchReports();
+    };
 
-    if (initialLoad) {
-      setLoading(true);
-    } else {
-      if (!loading && !refreshing) setLoading(true);
-    }
-    
-    setError(null);
+    window.addEventListener('focus', focusHandler);
+    return () => {
+      window.removeEventListener('focus', focusHandler);
+    };
+  }, []);
 
+  async function fetchReports() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -128,8 +83,8 @@ export default function ReportsScreen() {
 
       if (error) throw error;
       setReports(data || []);
-    } catch (err: any) {
-      setError('Raporlar yüklenirken bir hata oluştu: ' + (err.message || 'Bilinmeyen hata'));
+    } catch (err) {
+      setError('Raporlar yüklenirken bir hata oluştu.');
       console.error('Error fetching reports:', err);
     } finally {
       setLoading(false);
@@ -146,18 +101,12 @@ export default function ReportsScreen() {
 
   const handleManualRefresh = () => {
     setIsRefreshing(true);
-    setIsMenuVisible(false); // Close menu on refresh
-    setError(null);
     fetchReports();
   };
 
-  const handleToggleTheme = () => {
-    toggleTheme();
-    setIsMenuVisible(false); // Close menu on theme toggle
-  };
-
   const renderReport = ({ item }: { item: Report }) => (
-    <Animated.View entering={FadeInDown.duration(400)}>
+    // <Animated.View entering={FadeInDown.duration(400)}> // Replace with <View>
+    <View style={styles.cardWrapper}>
       <Pressable
         style={({ pressed }) => [
           styles.card,
@@ -168,8 +117,6 @@ export default function ReportsScreen() {
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.1,
             shadowRadius: 8,
-            borderColor: `${colors.border}50`, // Add border to cards
-            borderWidth: 1,
           },
         ]}
         onPress={() => router.push(`/report/${item.id}`)}
@@ -191,7 +138,7 @@ export default function ReportsScreen() {
           </View>
         </View>
       </Pressable>
-    </Animated.View>
+    </View> // Replace with </View>
   );
 
   if (loading) {
@@ -208,47 +155,7 @@ export default function ReportsScreen() {
   }
 
   return (
-    <AnimatedView style={styles.container}>
-      {/* Ayarlar ve Yenileme Menüsü Modalı */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isMenuVisible}
-        onRequestClose={() => setIsMenuVisible(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setIsMenuVisible(false)}>
-          <Animated.View 
-            entering={SlideInRight.duration(300)}
-            exiting={SlideOutRight.duration(300)}
-            style={[styles.menuContainer, { backgroundColor: colors.card }]}
-          >
-            <Pressable
-              style={styles.menuItem}
-              onPress={handleManualRefresh}
-              disabled={isRefreshing}
-            >
-              <Text style={[styles.menuItemText, { color: colors.text }]}>
-                Raporları Yenile
-              </Text>
-              {isRefreshing && <ActivityIndicator size="small" color={colors.primary} style={styles.menuItemIcon} />}
-            </Pressable>
-            <View style={[styles.menuDivider, { backgroundColor: colors.border }]} />
-            <Pressable style={styles.menuItem} onPress={handleToggleTheme}>
-              <Text style={[styles.menuItemText, { color: colors.text }]}>
-                {theme === 'dark' ? "Açık Tema" : "Koyu Tema"}
-              </Text>
-              <Animated.View style={themeIconAnimatedStyle}>
-                {theme === 'dark' ? (
-                  <Sun size={20} color={colors.text} style={styles.menuItemIcon} />
-                ) : (
-                  <Moon size={20} color={colors.text} style={styles.menuItemIcon} />
-                )}
-              </Animated.View>
-            </Pressable>
-          </Animated.View>
-        </Pressable>
-      </Modal>
-
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <View>
           <Text style={[styles.title, { color: colors.text }]}>Raporlar</Text>
@@ -257,18 +164,35 @@ export default function ReportsScreen() {
           </Text>
         </View>
         <View style={styles.headerRight}>
-          {/* Three-dot menu button */}
           <Pressable
             style={[styles.iconButton, { backgroundColor: colors.card }]}
-            onPress={() => setIsMenuVisible(true)}
+            onPress={handleManualRefresh}
+            disabled={isRefreshing}
           >
-            <MoreVertical size={20} color={colors.text} />
+            {/* <Animated.View style={refreshIconStyle}> // Replace with <View> */}
+            <View>
+              <RefreshCw 
+                size={20} 
+                color={colors.text}
+                style={styles.buttonIcon}
+              />
+            </View> {/* Replace with </View> */}
+          </Pressable>
+          <Pressable
+            style={[styles.iconButton, { backgroundColor: colors.card }]}
+            onPress={toggleTheme}
+          >
+            {theme === 'dark' ? (
+              <Sun size={20} color={colors.text} style={styles.buttonIcon} />
+            ) : (
+              <Moon size={20} color={colors.text} style={styles.buttonIcon} />
+            )}
           </Pressable>
         </View>
       </View>
 
       {error ? (
-        <Animated.View entering={FadeIn.duration(300)} style={[styles.errorBox, { backgroundColor: `${colors.error}10`, borderColor: colors.error }]}>
+        <View style={styles.centerContent}>
           <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
           <Text 
             style={[styles.retryText, { color: colors.primary }]}
@@ -276,7 +200,7 @@ export default function ReportsScreen() {
           >
             Tekrar Dene
           </Text>
-        </Animated.View>
+        </View>
       ) : (
         <FlatList
           data={reports}
@@ -297,8 +221,8 @@ export default function ReportsScreen() {
           }
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
-              <FileText size={64} color={colors.textTertiary} style={styles.emptyIcon} />
-              <Text style={[styles.emptyTitle, { color: colors.text, marginTop: 16 }]}>
+              <FileText size={48} color={colors.textTertiary} style={styles.emptyIcon} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>
                 Henüz Rapor Yok
               </Text>
               <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
@@ -308,7 +232,7 @@ export default function ReportsScreen() {
           )}
         />
       )}
-    </AnimatedView>
+    </View>
   );
 }
 
@@ -330,16 +254,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   iconButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   buttonIcon: {
     opacity: 0.8,
@@ -361,21 +280,18 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: 16,
-    paddingBottom: 100,
   },
   emptyList: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   card: {
     borderRadius: 16,
     marginBottom: 16,
     padding: 20,
     elevation: 4,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+  },
+  cardWrapper: { // Added for the temporary View replacement of Animated.View
+    marginBottom: 16, // Matches the margin-bottom of the original Animated.View
   },
   cardHeader: {
     flexDirection: 'row',
@@ -409,25 +325,14 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 14,
+    fontSize: 16,
+    marginBottom: 12,
     textAlign: 'center',
-  },
-  errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    justifyContent: 'center',
-    gap: 8,
   },
   retryText: {
     fontFamily: 'Inter-Medium',
     fontSize: 16,
     textDecorationLine: 'underline',
-    marginTop: 8,
   },
   emptyContainer: {
     flex: 1,
@@ -449,43 +354,5 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 16,
     textAlign: 'center',
-  },
-  // Modal and Menu Styles (Copied from Home Screen for consistency)
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    paddingTop: 100,
-    paddingRight: 20,
-  },
-  menuContainer: {
-    borderRadius: 8,
-    paddingVertical: 8,
-    minWidth: 180,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    justifyContent: 'space-between',
-  },
-  menuItemText: {
-    fontFamily: 'Inter-Medium',
-    fontSize: 16,
-  },
-  menuItemIcon: {
-    marginLeft: 10,
-  },
-  menuDivider: {
-    height: 1,
-    marginVertical: 4,
-    marginHorizontal: 16,
   },
 });
