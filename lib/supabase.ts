@@ -11,21 +11,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Set up real-time subscription for reports
-if (Platform.OS === 'web') {
-  supabase
-    .channel('reports')
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'Reports',
-    }, () => {
-      // Dispatch custom event for real-time updates
-      const event = new CustomEvent('reportUpdate');
-      window.dispatchEvent(event);
-    })
-    .subscribe();
-}
+// Real-time subscription bloğu kaldırıldı (eğer gerçek zamanlı güncellemeler istenmiyorsa)
+// if (Platform.OS === 'web') {
+//   supabase
+//     .channel('reports')
+//     .on('postgres_changes', {
+//       event: '*',
+//       schema: 'public',
+//       table: 'Reports',
+//     }, () => {
+//       const event = new CustomEvent('reportUpdate');
+//       window.dispatchEvent(event);
+//     })
+//     .subscribe();
+// }
 
 export interface Report {
   id: string;
