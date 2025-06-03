@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Switch, Image } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Check, Lock, Pi } from 'lucide-react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import { ArrowLeft, Check, Lock } from 'lucide-react-native';
+// import Animated, { FadeIn } from 'react-native-reanimated'; // Comment out this line
 
 export default function PrivacyScreen() {
-  const { colors, AnimatedView } = useTheme();
+  const { colors } = useTheme();
   const router = useRouter();
   
   const [settings, setSettings] = useState({
@@ -33,7 +33,7 @@ export default function PrivacyScreen() {
   };
 
   return (
-    <AnimatedView style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Pressable onPress={() => router.back()} style={styles.backButton}>
@@ -44,7 +44,10 @@ export default function PrivacyScreen() {
             <Lock size={20} color={colors.primary} style={styles.headerIcon} />
           </View>
         </View>
-        <Pi size={32} color={colors.primary} /> {/* Pi ikonu */}
+        <Image 
+          source={{ uri: 'https://dijitalpi.com/wp-content/uploads/2024/10/DijitalPi-Dijital-Pazarlama-Ajansi-Logo.png' }}
+          style={styles.logo}
+        />
       </View>
       
       <ScrollView
@@ -57,10 +60,9 @@ export default function PrivacyScreen() {
             Güvenlik
           </Text>
           
-          <Animated.View 
-            entering={FadeIn.duration(400)}
-            style={[styles.card, { backgroundColor: colors.card }]}
-          >
+          {/* <Animated.View  // Replace with <View> */}
+          {/* entering={FadeIn.duration(400)} */}
+          <View style={[styles.card, { backgroundColor: colors.card }]}>
             <View style={styles.setting}>
               <View style={styles.settingInfo}>
                 <Text style={[styles.settingTitle, { color: colors.text }]}>
@@ -94,7 +96,7 @@ export default function PrivacyScreen() {
                 trackColor={{ false: colors.border, true: colors.primary }}
               />
             </View>
-          </Animated.View>
+          </View> {/* Replace with </View> */}
         </View>
         
         <View style={styles.section}>
@@ -102,10 +104,9 @@ export default function PrivacyScreen() {
             Gizlilik
           </Text>
           
-          <Animated.View 
-            entering={FadeIn.duration(400)}
-            style={[styles.card, { backgroundColor: colors.card }]}
-          >
+          {/* <Animated.View  // Replace with <View> */}
+          {/* entering={FadeIn.duration(400)} */}
+          <View style={[styles.card, { backgroundColor: colors.card }]}>
             <View style={styles.setting}>
               <View style={styles.settingInfo}>
                 <Text style={[styles.settingTitle, { color: colors.text }]}>
@@ -139,7 +140,7 @@ export default function PrivacyScreen() {
                 trackColor={{ false: colors.border, true: colors.primary }}
               />
             </View>
-          </Animated.View>
+          </View> {/* Replace with </View> */}
         </View>
         
         <View style={styles.section}>
@@ -147,10 +148,9 @@ export default function PrivacyScreen() {
             Bildirimler
           </Text>
           
-          <Animated.View 
-            entering={FadeIn.duration(400)}
-            style={[styles.card, { backgroundColor: colors.card }]}
-          >
+          {/* <Animated.View  // Replace with <View> */}
+          {/* entering={FadeIn.duration(400)} */}
+          <View style={[styles.card, { backgroundColor: colors.card }]}>
             <View style={styles.setting}>
               <View style={styles.settingInfo}>
                 <Text style={[styles.settingTitle, { color: colors.text }]}>
@@ -184,7 +184,7 @@ export default function PrivacyScreen() {
                 trackColor={{ false: colors.border, true: colors.primary }}
               />
             </View>
-          </Animated.View>
+          </View> {/* Replace with </View> */}
         </View>
       </ScrollView>
       
@@ -198,15 +198,14 @@ export default function PrivacyScreen() {
       </View>
       
       {success && (
-        <Animated.View 
-          entering={FadeIn.duration(400)}
-          style={[styles.toast, { backgroundColor: colors.success }]}
-        >
+        // <Animated.View  // Replace with <View>
+        //   entering={FadeIn.duration(400)}
+        <View style={[styles.toast, { backgroundColor: colors.success }]}>
           <Check size={20} color="#FFFFFF" />
           <Text style={styles.toastText}>Ayarlar başarıyla güncellendi</Text>
-        </Animated.View>
+        </View> // Replace with </View>
       )}
-    </AnimatedView>
+    </View>
   );
 }
 
@@ -219,7 +218,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingTop: 50,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingBottom: 16,
   },
   headerLeft: {
@@ -242,6 +241,11 @@ const styles = StyleSheet.create({
   },
   headerIcon: {
     marginTop: 2,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   scrollView: {
     flex: 1,
