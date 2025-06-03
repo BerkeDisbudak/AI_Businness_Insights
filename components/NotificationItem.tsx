@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { useRouter } from 'expo-router';
 import { CircleAlert as AlertCircle, TrendingUp, TrendingDown, ChartBar as BarChart2 } from 'lucide-react-native';
-import Animated, { FadeInLeft } from 'react-native-reanimated';
+// import Animated, { FadeInLeft } from 'react-native-reanimated'; // Comment out this line
 
 interface Notification {
   id: string;
@@ -30,7 +30,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
 
   // Define icon based on notification type
   const getIcon = () => {
-    const size = 24; // İkon boyutu artırıldı
+    const size = 20;
     switch (notification.type) {
       case 'alert':
         return (
@@ -62,7 +62,8 @@ export function NotificationItem({ notification }: NotificationItemProps) {
   };
 
   return (
-    <Animated.View entering={FadeInLeft.duration(400)}>
+    // <Animated.View entering={FadeInLeft.duration(400)}> // Replace with <View>
+    <View>
       <Pressable
         style={({ pressed }) => [
           styles.container,
@@ -106,47 +107,47 @@ export function NotificationItem({ notification }: NotificationItemProps) {
           <View style={[styles.unreadIndicator, { backgroundColor: colors.primary }]} />
         )}
       </Pressable>
-    </Animated.View>
+    </View> // Replace with </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingVertical: 18, // Dikey dolgu artırıldı
-    paddingHorizontal: 18, // Yatay dolgu artırıldı
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
   },
   iconContainer: {
-    width: 48, // Kapsayıcı boyutu artırıldı
-    height: 48, // Kapsayıcı boyutu artırıldı
-    borderRadius: 24, // Yuvarlaklık artırıldı
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14, // Boşluk artırıldı
+    marginRight: 12,
   },
   content: {
     flex: 1,
   },
   title: {
-    fontSize: 17, // Başlık metin boyutu artırıldı
-    marginBottom: 6, // Boşluk artırıldı
+    fontSize: 16,
+    marginBottom: 4,
   },
   message: {
-    fontSize: 15, // Mesaj metin boyutu artırıldı
-    lineHeight: 22, // Satır yüksekliği artırıldı
-    marginBottom: 6, // Boşluk artırıldı
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 4,
     fontFamily: 'Inter-Regular',
   },
   timestamp: {
-    fontSize: 13, // Zaman damgası metin boyutu artırıldı
+    fontSize: 12,
     fontFamily: 'Inter-Regular',
   },
   unreadIndicator: {
-    width: 10, // Gösterge boyutu artırıldı
-    height: 10, // Gösterge boyutu artırıldı
-    borderRadius: 5, // Yuvarlaklık artırıldı
-    marginLeft: 10, // Boşluk artırıldı
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginLeft: 8,
     alignSelf: 'center',
   },
 });
