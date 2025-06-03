@@ -6,7 +6,8 @@ import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { ArrowLeft, FileText, Trash2 } from 'lucide-react-native';
 import { supabase, Report } from '@/lib/supabase';
-import Animated, { FadeIn } from 'react-native-reanimated';
+// Animated importunu geçici olarak devre dışı bırakalım
+// import Animated, { FadeIn } from 'react-native-reanimated';
 
 export default function ReportDetailScreen() {
   const { colors } = useTheme();
@@ -100,7 +101,7 @@ export default function ReportDetailScreen() {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={26} color={colors.text} /> {/* İkon boyutu artırıldı */}
+            <ArrowLeft size={24} color={colors.text} />
           </Pressable>
         </View>
         <View style={styles.loadingContainer}>
@@ -118,7 +119,7 @@ export default function ReportDetailScreen() {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={26} color={colors.text} /> {/* İkon boyutu artırıldı */}
+            <ArrowLeft size={24} color={colors.text} />
           </Pressable>
         </View>
         <View style={styles.errorContainer}>
@@ -141,7 +142,7 @@ export default function ReportDetailScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Pressable onPress={() => router.back()} style={styles.backButton}>
-            <ArrowLeft size={26} color={colors.text} /> {/* İkon boyutu artırıldı */}
+            <ArrowLeft size={24} color={colors.text} />
           </Pressable>
           <Text style={[styles.headerTitle, { color: colors.text }]}>
             Rapor Detayı
@@ -155,7 +156,7 @@ export default function ReportDetailScreen() {
               { opacity: pressed ? 0.7 : 1 }
             ]}
           >
-            <Trash2 size={26} color={colors.error} /> {/* İkon boyutu artırıldı */}
+            <Trash2 size={24} color={colors.error} />
           </Pressable>
         )}
       </View>
@@ -165,28 +166,23 @@ export default function ReportDetailScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View 
-          entering={FadeIn.duration(400)}
-          style={[styles.card, { backgroundColor: colors.card }]}
-        >
+        {/* Animated.View yerine normal View kullanalım */}
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
           <View style={styles.cardHeader}>
-            {/* İkon boyutu ve kapsayıcı boyutu artırıldı */}
             <View style={[styles.iconContainer, { backgroundColor: `${colors.primary}15` }]}>
-              <FileText size={28} color={colors.primary} />
+              <FileText size={24} color={colors.primary} />
             </View>
             <View style={styles.metaContainer}>
-              {/* Tarih metin boyutu artırıldı */}
               <Text style={[styles.date, { color: colors.textTertiary }]}>
                 {format(new Date(report.created_at), 'dd MMMM, HH:mm', { locale: tr })}
               </Text>
             </View>
           </View>
 
-          {/* Rapor içeriği metin boyutu artırıldı */}
           <Text style={[styles.content, { color: colors.text }]}>
             {report.report}
           </Text>
-        </Animated.View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -200,9 +196,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 55, // Padding biraz artırıldı
-    paddingBottom: 18, // Padding biraz artırıldı
-    paddingHorizontal: 20, // Yatay padding artırıldı
+    paddingTop: 50,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -210,8 +206,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontFamily: 'Inter-SemiBold',
-    fontSize: 22, // Başlık boyutu artırıldı
-    marginLeft: 14, // Boşluk artırıldı
+    fontSize: 20,
+    marginLeft: 12,
   },
   backButton: {
     padding: 8,
@@ -224,20 +220,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20, // Padding artırıldı
+    padding: 16,
   },
   card: {
-    padding: 24, // Kart dolgusu artırıldı
-    borderRadius: 14, // Kart yuvarlaklığı artırıldı
+    padding: 20,
+    borderRadius: 12,
   },
   cardHeader: {
     flexDirection: 'row',
-    marginBottom: 18, // Boşluk artırıldı
+    marginBottom: 16,
   },
   iconContainer: {
-    width: 52, // İkon kapsayıcı boyutu artırıldı
-    height: 52, // İkon kapsayıcı boyutu artırıldı
-    borderRadius: 26, // Yuvarlaklık artırıldı
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -247,13 +243,13 @@ const styles = StyleSheet.create({
   },
   date: {
     fontFamily: 'Inter-Regular',
-    fontSize: 15, // Metin boyutu artırıldı
+    fontSize: 14,
     marginBottom: 8,
   },
   content: {
     fontFamily: 'Inter-Regular',
-    fontSize: 17, // Metin boyutu artırıldı
-    lineHeight: 26, // Satır yüksekliği artırıldı
+    fontSize: 16,
+    lineHeight: 24,
   },
   loadingContainer: {
     flex: 1,
@@ -278,13 +274,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   retryButton: {
-    paddingVertical: 14, // Dikey dolgu artırıldı
-    paddingHorizontal: 26, // Yatay dolgu artırıldı
-    borderRadius: 10, // Yuvarlaklık artırıldı
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
   },
   buttonText: {
     color: '#FFFFFF',
     fontFamily: 'Inter-Medium',
-    fontSize: 15, // Metin boyutu artırıldı
+    fontSize: 14,
   },
 });
